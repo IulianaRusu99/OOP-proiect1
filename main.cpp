@@ -3,7 +3,7 @@
 
 using namespace std;
 ifstream fin("matrice.in");
-ofstream fout("matrice1.out");
+ofstream fout("matrice.out");
 
 class Matrice;
 
@@ -23,11 +23,19 @@ public:
         for (int i = 0; i < n; i++) {
             this->v[i] = v[i];
         }
-        //   fout << "constr parametri\n";
+        // fout << "constr parametri\n";
     }
 
-    void seteazaN(int n) {
+    void setN(int n) {
         this->n = n;
+    }
+
+    int getN() {
+        return this->n;
+    }
+
+    int* getV() {
+        return this->v;
     }
 
     void afisare() {
@@ -80,10 +88,10 @@ public:
     int operator*(Vector v) //produsul scalar a doi vectori
     {
         //return e1 * v.e1 + e2 * v.e2;
-        int p = 1;
+        int p = 0;
         for (int i = 0; i < n; i++) {
-            p = p * (this->v[i] * v.v[i]);
-            fout << endl << p << endl;
+            p = p + (this->v[i] * v.v[i]);
+            //            fout << endl << p << endl;
         }
 
         return p;
@@ -121,7 +129,7 @@ private:
 
     int m;
     int n;
-    Vector v1[100];
+    Vector v1[100]; // array de tip Vector
 
 public:
 
@@ -138,6 +146,10 @@ public:
         //  fout << "matr parametri\n";
     }
 
+    int getM() {
+        return this->m;
+    }
+
     void afisare() {
         //fout << "matrice param: "<< endl;
         for (int i = 0; i < m; i++) {
@@ -146,11 +158,15 @@ public:
 
     }
 
+    Vector* getV1() {
+        return this->v1;
+    }
+
     Matrice operator+(Matrice &b) {
         Matrice m3;
 
         if (this->m != b.m || this->n != b.n) {
-            fout << "matricele nu se pot aduna\n";
+            fout << "matricile nu se pot aduna\n";
 
             return m3;
         }
@@ -159,10 +175,9 @@ public:
         m3.n = this->n;
 
         fout << m3.m << " -- " << m3.n << endl;
-        fout<<"suma matricelor:\n";
 
         for (int i = 0; i < m; i++) {
-            // fout << "adunare vector\n";
+            // cout << "adunare vector\n";
             m3.v1[i].n = n;
             for (int j = 0; j < n; j++) {
 
@@ -174,7 +189,7 @@ public:
     }
 
     friend ostream& operator<<(ostream& os, const Matrice& mat) {
-        //fout << "Afisare Matrice <<\n";
+        //  cout << "Afisare Matrice <<\n";
 
         os << mat.m << ' ' << mat.n << '\n';
 
@@ -192,11 +207,45 @@ public:
     }
 };
 
+int verificare(int A[100][100], int x[], int y[], int m, int n) {
+    //creez obiecte de tip matrice/vector
+    fout<<"Intrare Verificare\n";
+    Vector linii[m]; // am m linii
+
+    for (int i = 0; i < m; i++) {
+        linii[i] = Vector(n, A[i]);
+    }
+    fout << "Creare obiect matrice: \n";
+    Matrice M(m, n, linii);
+    fout << "ob matr:\n" << M;
+    fout << "Creare obiect vector: \n";
+    Vector X(n, x);
+    fout << X << endl;
+    fout<<"Creare obiect vector: \n";
+    Vector Y(m, y);
+    fout << Y << endl;
+    int ok = 1;
+    for (int i = 0; i < M.getM(); i++) {
+        Vector linie = M.getV1()[i];
+
+        int pr_scalar = linie * X;
+        if (pr_scalar != Y.getV()[i]) {
+            ok = 0;
+            break;
+        }
+    }
+    if (ok == 1)
+        fout << "Ax=y" << endl;
+    else
+        fout << "Ax!=y" << endl;
+    fout<<"Iesire Verificare\n";
+}
+
 istream & operator>>(istream &in, Matrice &mat) {
     in >> mat.m;
     in >> mat.n;
     for (int i = 0; i < mat.m; i++) {
-        mat.v1[i].seteazaN(mat.n);
+        mat.v1[i].setN(mat.n);
         in >> mat.v1[i];
     }
 
@@ -206,12 +255,14 @@ istream & operator>>(istream &in, Matrice &mat) {
 int main() {
 
     int m, n;
+    fout << "Se citesc m si n: \n";
     fin >> m>>n;
+    fout << "m= " << m << " n= " << n << endl;
     int v[100];
     int v1[100];
     Vector arr[100];
     Vector arr1[100];
-
+    fout << "Se citesc vectorii matricei\n";
     for (int i = 0; i < m; i++) {
         for (int j = 0; j < n; j++)
             fin >> v[j];
@@ -227,7 +278,7 @@ int main() {
 
     }
 
-    //  fout << "constr matrice\n";
+    fout << "construire matrice\n";
 
     Matrice matr(m, n, arr);
     Matrice matr1(m, n, arr1);
@@ -241,26 +292,32 @@ int main() {
     matr1.afisare();
 
     fout << endl;
-
+    fout << "calculare suma" << endl;
     Matrice suma = matr + matr1;
+
     suma.afisare();
 
-    // cout << "afisare cu supraincarcare\n";
-   // fout << suma;
-    fout << endl;
-/*
-    fout<<"vector: "<<endl;
-    Vector test;
-    fin >> test;
-    fout << test;
-    fout << endl;
-    // cout << "citire afisare test\n";
-    Matrice tesst;
-    fin >> tesst;
-    fout << tesst;
-    fout << endl;
-*/
+    fout << "afisare cu supraincarcare\n";
+    fout << suma;
 
+    fout << "Verificare Ax=y: " << endl;
+    fout << "Citire m si n\n";
+    fin >> m >> n;
+    fout << "m= " << m << " n= " << n << endl;
+    int A[100][100], x[n], y[m];
+    fout << "citire matrice A:\n";
+    for (int i = 0; i < m; i++) {
+        for (int j = 0; j < n; j++) {
+            fin >> A[i][j];
+        }
+    }
+    fout << "Citire X\n";
+    for (int i = 0; i < n; i++)
+        fin >> x[i];
+    fout << "Citire Y\n";
+    for (int i = 0; i < m; i++)
+        fin >> y[i];
+    verificare(A, x, y, m, n);
     return 0;
 }
 
